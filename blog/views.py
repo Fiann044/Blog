@@ -66,3 +66,26 @@ def register(request):
         form = UserCreationForm()
 
     return render(request, 'blog/register.html', {'form': form})
+
+@login_required(login_url='login')
+def edit_artikel(request, id):
+   
+    artikel_pilihan = get_object_or_404(Artikel, id=id)
+    
+   
+    if request.user != artikel_pilihan.penulis:
+        return redirect('halaman_utama')
+        
+    if request.method == 'POST':
+   
+        form = ArtikelForm(request.POST, request.FILES, instance=artikel_pilihan)
+        
+        if form.is_valid():
+            form.save()
+          
+            return redirect('detail_artikel', id=artikel_pilihan.id)
+    else:
+       
+        form = ArtikelForm(instance=artikel_pilihan)
+
+    return render(request, 'blog/edit.html', {'form': form, 'artikel': artikel_pilihan})

@@ -13,8 +13,20 @@
     <div class="container mt-5">
         <div class="card shadow-sm border-0 p-5">
             <h1 class="fw-bold text-primary">{{ artikel.judul }}</h1>
-            <p class="text-muted mb-4">📅 Dipublikasikan pada: {{ artikel.tanggal_publikasi|date:"d M Y, H:i" }}</p>
 
+            <p class="text-muted mb-4">
+                📅 Dipublikasikan pada: {{ artikel.tanggal_publikasi|date:"d M Y, H:i" }} |
+                ✍️ Ditulis oleh: <b>{{ artikel.penulis.username }}</b>
+            </p>
+
+            {% if user.is_authenticated and user == artikel.penulis %}
+            <div class="mb-4">
+                <a href="{% url 'edit_artikel' artikel.id %}"
+                    class="btn btn-sm btn-outline-warning text-dark fw-bold me-2">✏️ Edit Artikel</a>
+                <a href="{% url 'hapus_artikel' artikel.id %}" class="btn btn-sm btn-outline-danger">🗑️ Hapus
+                    Artikel</a>
+            </div>
+            {% endif %}
             {% if artikel.gambar %}
             <img src="{{ artikel.gambar.url }}" class="img-fluid rounded mb-4" alt="{{ artikel.judul }}"
                 style="max-height: 500px; object-fit: cover; width: 100%;">
