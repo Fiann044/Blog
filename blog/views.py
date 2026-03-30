@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from .models import Artikel
 from .forms import ArtikelForm
 from django.contrib.auth.forms import UserCreationForm 
+from .models import Artikel, Komentar
+from .forms import ArtikelForm, KomentarForm
 
 
 def halaman_utama(request):
@@ -17,7 +19,30 @@ def halaman_utama(request):
 
 def detail_artikel(request, id):
     artikel_pilihan = get_object_or_404(Artikel, id=id)
-    return render(request, 'blog/detail.html', {'artikel': artikel_pilihan})
+    
+
+    daftar_komentar = artikel_pilihan.komentar.all().order_by('-tanggal_dibuat')
+    
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            form_komentar = KomentarForm(request.POST)
+            if form_komentar.is_valid():
+                komentar_baru = form_komentar.save(commit=False)
+                komentar_baru.artikel = artikel_pilihan
+                komentar_baru.penulis = request.user
+                komentar_baru.save()
+                return redirect('detail_artikel', id=artikel_pilihan.id)
+        else:
+            return redirect('login')
+    else:
+        form_komentar = KomentarForm()
+
+    
+    return render(request, 'blog/detail.html', {
+        'artikel': artikel_pilihan,
+        'daftar_komentar': daftar_komentar,
+        'form_komentar': form_komentar
+    })
 
 
 @login_required(login_url='login')
@@ -89,3 +114,4 @@ def edit_artikel(request, id):
         form = ArtikelForm(instance=artikel_pilihan)
 
     return render(request, 'blog/edit.html', {'form': form, 'artikel': artikel_pilihan})
+
